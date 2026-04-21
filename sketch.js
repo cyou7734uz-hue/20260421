@@ -11,22 +11,26 @@ function setup() {
   // 隱藏預設出現在畫布下方的 HTML 影片元素，只在畫布內繪製
   capture.hide();
 
-  // 建立一個與預設視訊解析度相近的繪圖圖層
-  // 註：通常攝影機啟動需時間，這裡先建立一個基礎大小，draw 中會依需求縮放
-  pg = createGraphics(640, 480);
+  // 初始建立一個空的圖層，大小會在 draw 中根據攝影機解析度同步
+  pg = createGraphics(1, 1);
 }
 
 function draw() {
   // 設定背景顏色為 e7c6ff
   background('#e7c6ff');
 
-  // 計算影像顯示的大小（畫布寬高的 60%）
+  // 計算���像顯示的大小（畫布寬高的 60%）
   let videoWidth = width * 0.6;
   let videoHeight = height * 0.6;
 
   // 計算置中座標
   let x = (width - videoWidth) / 2;
   let y = (height - videoHeight) / 2;
+
+  // 步驟：確保 pg 的內部解析度與攝影機影像 (capture) 原始寬高完全一致
+  if (capture.width > 0 && (pg.width !== capture.width || pg.height !== capture.height)) {
+    pg.resizeCanvas(capture.width, capture.height);
+  }
 
   // 處理鏡像反轉並將影像繪製在中間
   push();
@@ -35,17 +39,15 @@ function draw() {
   scale(-1, 1);
   image(capture, x, y, videoWidth, videoHeight);
 
-  // 更新 Graphics 內容 (範例：在圖層中間畫一個圓與文字)
+  // 在 pg 圖層上繪製內容（這些內容會顯示在視訊上方）
   pg.clear(); // 確保背景透明
-  pg.stroke(255);
+  pg.stroke(0, 255, 0); // 綠色邊框範例
   pg.strokeWeight(4);
   pg.noFill();
-  pg.ellipse(pg.width / 2, pg.height / 2, 100, 100); 
-  pg.fill(255);
-  pg.noStroke();
-  pg.textSize(32);
-  pg.textAlign(CENTER, CENTER);
-  pg.text("Overlay Layer", pg.width / 2, pg.height / 2 + 80);
+  // 畫一個跟視訊一樣大的矩形邊框
+  pg.rect(0, 0, pg.width, pg.height);
+  pg.fill(0, 255, 0);
+  pg.circle(pg.width / 2, pg.height / 2, 50);
 
   // 將 Graphics 內容繪製在視訊畫面之上，並縮放到與視訊相同的大小
   image(pg, x, y, videoWidth, videoHeight);
