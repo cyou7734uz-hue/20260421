@@ -94,7 +94,7 @@ function draw() {
   scale(-1, 1);
 
   // 製作馬賽克黑白效果
-  if (!isPreviewing && capture.width > 0) {
+  if (!isPreviewing && capture.width > 0 && capture.pixels.length > 0) {
     capture.loadPixels();
     let unitSize = 20; // 定義 20x20 為一個單位
     
@@ -105,22 +105,23 @@ function draw() {
     for (let cy = 0; cy < capture.height; cy += unitSize) {
       for (let cx = 0; cx < capture.width; cx += unitSize) {
         // 取得該單位起始像素的 RGB 值
-        let i = (floor(cx) + floor(cy) * capture.width) * 4;
+        let i = (int(cx) + int(cy) * capture.width) * 4;
         let r = capture.pixels[i];
         let g = capture.pixels[i + 1];
         let b = capture.pixels[i + 2];
         
-        // 根據需求公式計算黑白顏色值: (R+G+B)/3
-        let gray = (r + g + b) / 3;
-        
-        fill(gray);
-        noStroke();
-        
-        // 將攝影機座標與單位大小映射到畫布顯示區域
-        let dx = map(cx, 0, capture.width, x, x + videoWidth);
-        let dy = map(cy, 0, capture.height, y, y + videoHeight);
-        
-        rect(dx, dy, dw, dh);
+        if (r !== undefined) {
+          // 根據需求公式計算黑白顏色值: (R+G+B)/3
+          let gray = (r + g + b) / 3;
+          fill(gray);
+          noStroke();
+          
+          // 將攝影機座標映射到畫布顯示區域
+          let dx = map(cx, 0, capture.width, x, x + videoWidth);
+          let dy = map(cy, 0, capture.height, y, y + videoHeight);
+          
+          rect(dx, dy, dw + 1, dh + 1); // +1 是為了消除方塊間可能的縫隙
+        }
       }
     }
   }
