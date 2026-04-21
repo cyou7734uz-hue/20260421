@@ -92,7 +92,35 @@ function draw() {
   // 將座標原點移到畫布右側，並水平翻轉座標系
   translate(width, 0);
   scale(-1, 1);
-  image(capture, x, y, videoWidth, videoHeight);
+
+  // 製作馬賽克黑白效果
+  if (!isPreviewing && capture.width > 0) {
+    capture.loadPixels();
+    let unitSize = 20; // 定義 20x20 為一個單位
+    for (let cy = 0; cy < capture.height; cy += unitSize) {
+      for (let cx = 0; cx < capture.width; cx += unitSize) {
+        // 取得該單位起始像素的 RGB 值
+        let i = (cx + cy * capture.width) * 4;
+        let r = capture.pixels[i];
+        let g = capture.pixels[i + 1];
+        let b = capture.pixels[i + 2];
+        
+        // 根據需求公式計算黑白顏色值: (R+G+B)/3
+        let gray = (r + g + b) / 3;
+        
+        fill(gray);
+        noStroke();
+        
+        // 將攝影機座標與單位大小映射到畫布顯示區域
+        let dx = map(cx, 0, capture.width, x, x + videoWidth);
+        let dy = map(cy, 0, capture.height, y, y + videoHeight);
+        let dw = map(unitSize, 0, capture.width, 0, videoWidth);
+        let dh = map(unitSize, 0, capture.height, 0, videoHeight);
+        
+        rect(dx, dy, dw, dh);
+      }
+    }
+  }
 
   // 在 pg 圖層上繪製內容（這些內容會顯示在視訊上方）
   pg.clear(); // 確保背景透明
